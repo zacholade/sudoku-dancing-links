@@ -1,8 +1,8 @@
-from typing import Callable, List
+from typing import Callable, List, Union
 import numpy as np
 import abc
 
-def solution_found_callback():
+def solution_found_callback(s: List):
     print("SOLUTION FOUND OMG!")
 
 
@@ -11,7 +11,7 @@ class StorageObject:
     Represents an abstract base class for any storage object in the
     Dancing Links algorithm.
     """
-    def __init__(self, c: "ColumnObject", identifier: str, u=None, d=None, l=None, r=None):
+    def __init__(self, c: "ColumnObject", identifier: Union[str, int], u=None, d=None, l=None, r=None):
         self.identifier = identifier
         self.c = c
 
@@ -26,11 +26,11 @@ class StorageObject:
         self.r = r if r else self
 
     @property
-    def identifier(self) -> str:
+    def identifier(self) -> Union[str, int]:
         return self._identifier
 
     @identifier.setter
-    def identifier(self, identifier: str):
+    def identifier(self, identifier: Union[str, int]):
         self._identifier = identifier
 
 
@@ -38,7 +38,7 @@ class ColumnObject(StorageObject):
     """
     Represents a column in the binary matrix used in DL.
     """
-    def __init__(self, identifier: str):
+    def __init__(self, identifier: Union[str, int]):
         super().__init__(self, identifier)
         # The column size is initialised with 0. We increment this
         # inside of DataObject class __init__ upon creation.
@@ -51,7 +51,7 @@ class DataObject(StorageObject):
     Donald Knuth refers to any cell in the binary matrix with a value of 1
     as "Data Objects".
     """
-    def __init__(self, c: ColumnObject, identifier: str):
+    def __init__(self, c: ColumnObject, identifier: Union[str, int]):
         super().__init__(c, identifier)
 
 
@@ -102,15 +102,12 @@ class BoxConstraint(Constraint):
 
     @staticmethod
     def column_num(x: int, y: int, sub_row: int) -> int:
-        # 'Cast' to an int or else division results in a float.
-        # We don't need to worry in this case as we apply the row offset.
-        # Will always be an int anyways but required for indexing operator[].
         return BoxConstraint._offset + (3 * (x // 3) + y // 3) * 9 + sub_row
 
 
 class MatrixUtility:
     @classmethod
-    def construct_from_grid(cls, grid: np.array) -> ColumnObject:
+    def construct_from_np_array(cls, grid: np.array) -> ColumnObject:
         """
         Constructs the matrix and returns the root column.
         """
@@ -122,7 +119,7 @@ class MatrixUtility:
         # 324 = (9x9) + (9x9) + (9x9) + (9x9).
         # for loop makes columns from left to right with h on the far left.
         for identifier in range(324):
-            c = ColumnObject(str(identifier))
+            c = ColumnObject(identifier)
             # The last column should wrap back to the root (as per circular
             # doubly linked list). So we can set R to h.
             c.r = h
@@ -145,19 +142,19 @@ class MatrixUtility:
             # Get the column by indexing our columns list with the constraint offset.
             columns[CellConstraint.column_num(x, y, sub_row)],
             # set the id equal to the row num
-            str(row_num)
+            row_num
         )
         row_constraint = DataObject(
             columns[RowConstraint.column_num(x, y, sub_row)],
-            str(row_num)
+            row_num
         )
         col_constraint = DataObject(
             columns[ColumnConstraint.column_num(x, y, sub_row)],
-            str(row_num)
+            row_num
         )
         box_constraint = DataObject(
             columns[BoxConstraint.column_num(x, y, sub_row)],
-            str(row_num)
+            row_num
         )
 
         # Link the rows together as they are part of one big matrix.
@@ -182,10 +179,10 @@ class MatrixUtility:
     @staticmethod
     def _build_constraints(grid: np.array, columns: List[ColumnObject]):
         for x, y in ((x, y) for x in range(9) for y in range(9)):
-            if grid[y][x] != 0:
+            if grid[x][y] != 0:
                 # We have been given a clue so must hold this value! No need to
                 # create 9 rows for each solution like we did above.
-                sub_row = grid[y][x] - 1
+                sub_row = grid[x][y] - 1
                 MatrixUtility._link(x, y, sub_row, columns)
             else:
                 # We don't know what is in this cell so we need to create
@@ -206,18 +203,19 @@ class DLX:
         :param callback: A callback to call with the solution when found.
         """
         self._callback = callback
-        self.h = MatrixUtility.construct_from_grid(grid)
+        self.h = MatrixUtility.construct_from_np_array(grid)
 
     def solve(self) -> None:
         # First time we call search, call it with an empty list.
         self._search([])
 
     def _search(self, s: List[DataObject]):
-        print(s)
         if self.h.r == self.h:
-            self._callback()
+            self._callback(s)
             return
+
         c = self._choose_column_object()
+        self._cover(c)
         r = c.d
         while r != c:
             s.append(r)
@@ -236,7 +234,8 @@ class DLX:
         self._uncover(c)
         return
 
-    def _cover(self, c: ColumnObject):
+    @staticmethod
+    def _cover(c: ColumnObject):
         c.r.l = c.l
         c.l.r = c.r
         i = c.d
@@ -245,16 +244,17 @@ class DLX:
             while j != i:
                 j.d.u = j.u
                 j.u.d = j.d
-                j.c.s = j.c.s - 1
+                j.c.s -= 1
                 j = j.r
             i = i.d
 
-    def _uncover(self, c: ColumnObject):
+    @staticmethod
+    def _uncover(c: ColumnObject):
         i = c.u
         while i != c:
             j = i.l
             while j != i:
-                j.c.s = j.c.s - 1
+                j.c.s += 1
                 j.d.u = j
                 j.u.d = j
                 j = j.l
