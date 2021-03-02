@@ -1,4 +1,4 @@
-from typing import Callable, List, Union
+from typing import Callable, List, Union, Tuple
 import numpy as np
 import abc
 
@@ -16,92 +16,6 @@ def solution_found_callback(s: List):
     print(np.array(grid).reshape(9,9))
     print('---------------------')
 
-
-
-class StorageObject:
-    """
-    Represents an abstract base class for any storage object in the
-    Dancing Links algorithm.
-    """
-    def __init__(self, c: "ColumnObject", identifier: Union[str, int], u=None, d=None, l=None, r=None):
-        self.identifier = identifier
-        self.c = c
-
-        # Link to the other cells containing a 1 in 4 orthogonal positions:
-        # up, down, left, and right.
-        # Any link that has no corresponding 1 instead will link to itself.
-        # We therefore initialise these values as just that and will link
-        # them later on.
-        self.u = u if u else self
-        self.d = d if d else self
-        self.l = l if l else self
-        self.r = r if r else self
-
-    @property
-    def identifier(self) -> Union[str, int]:
-        return self._identifier
-
-    @identifier.setter
-    def identifier(self, identifier: Union[str, int]):
-        self._identifier = identifier
-
-
-class ColumnObject(StorageObject):
-    """
-    Represents a column in the binary matrix used in DL.
-    """
-    def __init__(self, identifier: Union[str, int]):
-        super().__init__(self, identifier)
-        # The column size is initialised with 0. We increment this
-        # inside of DataObject class __init__ upon creation.
-        self.s = 0
-
-    def cover(self) -> None:
-        self.r.l = self.l
-        self.l.r = self.r
-        i = self.d
-        while i != self:
-            j = i.r
-            while j != i:
-                j.d.u = j.u
-                j.u.d = j.d
-                j.c.s -= 1
-                j = j.r
-            i = i.d
-
-    def uncover(self) -> None:
-        i = self.u
-        while i != self:
-            j = i.l
-            while j != i:
-                j.c.s += 1
-                j.d.u = j
-                j.u.d = j
-                j = j.l
-            i = i.u
-        self.r.l = self
-        self.l.r = self
-
-class DataObject(StorageObject):
-    """
-    Represents a given data object for use in the Dancing Links algorithm.
-    Donald Knuth refers to any cell in the binary matrix with a value of 1
-    as "Data Objects".
-    """
-    def __init__(self, c: ColumnObject, identifier: Union[str, int]):
-        super().__init__(c, identifier)
-
-    def link_rows(self):
-        c = self.c
-        c.s += 1
-        # make the last data object wrap to the column object.
-        self.d = c
-        # Now we can swap the previous last data object with this data object.
-        self.u = c.u
-        c.u.d = c.u = self
-
-    def unlink(self):
-        ...
 
 class Constraint:
     @property
@@ -153,6 +67,119 @@ class BoxConstraint(Constraint):
         return BoxConstraint._offset + (3 * (x // 3) + y // 3) * 9 + sub_row
 
 
+class StorageObject:
+    """
+    Represents an abstract base class for any storage object in the
+    Dancing Links algorithm.
+    """
+    def __init__(self,
+                 column: "ColumnObject",
+                 identifier: Union[str, int],
+                 up=None,
+                 down=None,
+                 left=None,
+                 right=None):
+        self.identifier = identifier
+        self.column = column
+
+        # Link to the other cells containing a 1 in 4 orthogonal positions:
+        # up, down, left, and right.
+        # Any link that has no corresponding 1 instead will link to itself.
+        # We therefore initialise these values as just that and will link
+        # them later on.
+        self.up = up if up else self
+        self.down = down if down else self
+        self.left = left if left else self
+        self.right = right if right else self
+
+    @property
+    def identifier(self) -> Union[str, int]:
+        return self._identifier
+
+    @identifier.setter
+    def identifier(self, identifier: Union[str, int]):
+        self._identifier = identifier
+
+
+class ColumnObject(StorageObject):
+    """
+    Represents a column in the binary matrix used in DL.
+    """
+    def __init__(self, identifier: Union[str, int]):
+        super().__init__(self, identifier)
+        # The column size is initialised with 0. We increment this
+        # inside of DataObject class __init__ upon creation.
+        self.size = 0
+
+    def cover(self) -> None:
+        self.right.left = self.left
+        self.left.right = self.right
+        i = self.down
+        while i != self:
+            j = i.right
+            while j != i:
+                j.down.up = j.up
+                j.up.down = j.down
+                j.column.size -= 1
+                j = j.right
+            i = i.down
+
+    def uncover(self) -> None:
+        i = self.up
+        while i != self:
+            j = i.left
+            while j != i:
+                j.column.size += 1
+                j.down.up = j
+                j.up.down = j
+                j = j.left
+            i = i.up
+        self.right.left = self
+        self.left.right = self
+
+
+class DataObject(StorageObject):
+    """
+    Represents a given data object for use in the Dancing Links algorithm.
+    Donald Knuth refers to any cell in the binary matrix with a value of 1
+    as "Data Objects".
+    """
+    def __init__(self, column: ColumnObject, identifier: Union[str, int]):
+        super().__init__(column, identifier)
+        # New data object in column. Increase the size.
+        self.column.size += 1
+
+        # Following lines Link each row to the column in a circular linked list fashion.
+        # Make the last data object wrap to the column object.
+        self.down = self.column
+        # Now we can swap the previous last data object with this data object.
+        self.up = self.column.up
+        self.column.up.down = self.column.up = self
+
+    @classmethod
+    def with_constraints(cls,
+                         x: int,
+                         y: int,
+                         sub_row: int,
+                         columns: List[ColumnObject]) -> \
+            Tuple["DataObject", "DataObject", "DataObject", "DataObject"]:
+        row_num = 81 * x + 9 * y + sub_row
+        cel = cls(columns[CellConstraint.column_num(x, y, sub_row)], row_num)
+        row = cls(columns[RowConstraint.column_num(x, y, sub_row)], row_num)
+        col = cls(columns[ColumnConstraint.column_num(x, y, sub_row)], row_num)
+        box = cls(columns[BoxConstraint.column_num(x, y, sub_row)], row_num)
+
+        # Link the rows together as they are part of one big matrix.
+        # Order that these 4 constraints take place in this matrix does not
+        # matter. For legibility sake, they will retain the order defined above.
+        # Cell constraint on the far left .. to box constraint on the far right.
+        cel.right = col.left = row
+        row.right = box.left = col
+        col.right = cel.left = box
+        box.right = row.left = cel
+        return cel, row, col, box
+
+
 class MatrixUtility:
     @classmethod
     def construct_from_np_array(cls, grid: np.array) -> ColumnObject:
@@ -160,77 +187,40 @@ class MatrixUtility:
         Constructs the matrix and returns the root column.
         """
         # Create the root column
-        h = ColumnObject('h')
+        head = ColumnObject('h')
         columns = []
         # We need 324 columns in the binary matrix to satisfy all the
         # constraints Sudoku imposes. Cell, row, column and grid constraints.
         # 324 = (9x9) + (9x9) + (9x9) + (9x9).
         # for loop makes columns from left to right with h on the far left.
         for identifier in range(324):
-            c = ColumnObject(identifier)
+            column = ColumnObject(identifier)
             # The last column should wrap back to the root (as per circular
             # doubly linked list). So we can set R to h.
-            c.r = h
+            column.right = head
             # Likewise with the last column
-            c.l = h.l
-            h.l.r = c  # h.L.R is the previously made column.
+            column.left = head.left
+            head.left.right = column  # h.L.R is the previously made column.
             # Lastly make it loop to the left also.
-            h.l = c
-            columns.append(c)
+            head.left = column
+            columns.append(column)
 
-        cls._build_constraints(grid, columns)
-        return h
-
-    @staticmethod
-    def _link(x, y, sub_row, columns: List[ColumnObject]):
-        # Ensures each row has a unique identifier.
-        row_num = 81 * x + 9 * y + sub_row
-        # Create the constraints
-        cell_constraint = DataObject(
-            # Get the column by indexing our columns list with the constraint offset.
-            columns[CellConstraint.column_num(x, y, sub_row)],
-            # set the id equal to the row num
-            row_num
-        )
-        row_constraint = DataObject(
-            columns[RowConstraint.column_num(x, y, sub_row)],
-            row_num
-        )
-        col_constraint = DataObject(
-            columns[ColumnConstraint.column_num(x, y, sub_row)],
-            row_num
-        )
-        box_constraint = DataObject(
-            columns[BoxConstraint.column_num(x, y, sub_row)],
-            row_num
-        )
-
-        # Link the rows together as they are part of one big matrix.
-        # Order that these 4 constraints take place in this matrix does not
-        # matter. For legibility sake, they will retain the order defined above.
-        # Cell constraint on the far left .. to box constraint on the far right.
-        cell_constraint.r = col_constraint.l = row_constraint
-        row_constraint.r = box_constraint.l = col_constraint
-        col_constraint.r = cell_constraint.l = box_constraint
-        box_constraint.r = row_constraint.l = cell_constraint
-
-        # Link each row to the column
-        for d in (cell_constraint, row_constraint, col_constraint, box_constraint):
-            d.link_rows()
-
-    @staticmethod
-    def _build_constraints(grid: np.array, columns: List[ColumnObject]):
+        # Now we need to loop over every grid position in the np array and
+        # determine if it provides a clue. What we do is determined by where this
+        # clue is present or not. Explained below.
         for x, y in ((x, y) for x in range(9) for y in range(9)):
             if grid[x][y] != 0:
                 # We have been given a clue so must hold this value! No need to
-                # create 9 rows for each solution like we did above.
+                # create 9 rows for each possible solution like we do below as the
+                # solution is already provided.
                 sub_row = grid[x][y] - 1
-                MatrixUtility._link(x, y, sub_row, columns)
+                DataObject.with_constraints(x, y, sub_row, columns)
             else:
                 # We don't know what is in this cell so we need to create
                 # 9 new rows for each of the possible solutions for this cell.
                 for sub_row in range(9):
-                    MatrixUtility._link(x, y, sub_row, columns)
+                    DataObject.with_constraints(x, y, sub_row, columns)
+        return head
 
 
 class DLX:
@@ -245,35 +235,35 @@ class DLX:
         :param callback: A callback to call with the solution when found.
         """
         self._callback = callback
-        self.h = MatrixUtility.construct_from_np_array(grid)
+        self.head = MatrixUtility.construct_from_np_array(grid)
 
     def solve(self) -> None:
         # First time we call search, call it with an empty list.
         self._search([])
 
     def _search(self, s: List[DataObject]):
-        if self.h.r == self.h:
+        if self.head.right == self.head:
             self._callback(s)
             return
 
-        c = self._choose_column_object()
-        c.cover()
-        r = c.d
-        while r != c:
+        column = self._choose_column_object()
+        column.cover()
+        r = column.down
+        while r != column:
             s.append(r)
-            j = r.r
+            j = r.right
             while j != r:
-                j.c.cover()
-                j = j.r
+                j.column.cover()
+                j = j.right
             self._search(s)
             r = s.pop()
-            c = r.c
-            j = r.l
+            column = r.column
+            j = r.left
             while j != r:
-                j.c.uncover()
-                j = j.l
-            r = r.d
-        c.uncover()
+                j.column.uncover()
+                j = j.left
+            r = r.down
+        column.uncover()
         return
 
     def _choose_column_object(self):
@@ -281,15 +271,15 @@ class DLX:
         Donald Knuth argues that to minimise the branching factor, we should
         choose the column with the fewest number of 1's occurring in it.
         """
-        s = np.inf
-        cur = self.h.r
-        col = None
-        while cur != self.h:
-            if cur.s < s:
-                s = cur.s
-                col = cur
-            cur = cur.r
-        return col
+        size = np.inf
+        current = self.head.right
+        column = None
+        while current != self.head:
+            if current.size < size:
+                size = current.size
+                column = current
+            current = current.right
+        return column
 
 
 if __name__ == "__main__":
