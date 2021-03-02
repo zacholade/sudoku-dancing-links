@@ -84,15 +84,9 @@ class DataObject(StorageObject):
     as "Data Objects".
     """
     def __init__(self, column: ColumnObject, identifier: Union[str, int]) -> None:
-        super().__init__(column, identifier)
+        super().__init__(column, identifier, down=column, up=column.up)
         # New data object in column. Increase the size.
         self.column.size += 1
-
-        # Following lines Link each row to the column in a circular linked list fashion.
-        # Make the last data object wrap to the column object.
-        self.down = self.column
-        # Now we can swap the previous last data object with this data object.
-        self.up = self.column.up
         self.column.up.down = self.column.up = self
 
     @classmethod
