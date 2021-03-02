@@ -78,7 +78,7 @@ class StorageObject:
                  up=None,
                  down=None,
                  left=None,
-                 right=None):
+                 right=None) -> None:
         self.identifier = identifier
         self.column = column
 
@@ -103,7 +103,7 @@ class StorageObject:
 
 class ColumnObject(StorageObject):
     """
-    Represents a column in the binary matrix used in DL.
+    Represents a column in the binary matrix used in DLX.
     """
     def __init__(self, identifier: Union[str, int]):
         super().__init__(self, identifier)
@@ -163,6 +163,12 @@ class DataObject(StorageObject):
                          sub_row: int,
                          columns: List[ColumnObject]) -> \
             Tuple["DataObject", "DataObject", "DataObject", "DataObject"]:
+        """
+        A class method which creates four data objects for the given position
+        in the 9x9 sudoku grid. Each data object satisfies a different constraint.
+        Afterwards we link the columns/rows together to form a circular doubly
+        linked list.
+        """
         row_num = 81 * x + 9 * y + sub_row
         cel = cls(columns[CellConstraint.column_num(x, y, sub_row)], row_num)
         row = cls(columns[RowConstraint.column_num(x, y, sub_row)], row_num)
@@ -187,7 +193,7 @@ class MatrixUtility:
         Constructs the matrix and returns the root column.
         """
         # Create the root column
-        head = ColumnObject('h')
+        head = ColumnObject('head')
         columns = []
         # We need 324 columns in the binary matrix to satisfy all the
         # constraints Sudoku imposes. Cell, row, column and grid constraints.
@@ -241,22 +247,22 @@ class DLX:
         # First time we call search, call it with an empty list.
         self._search([])
 
-    def _search(self, s: List[DataObject]):
+    def _search(self, solution: List[DataObject]):
         if self.head.right == self.head:
-            self._callback(s)
+            self._callback(solution)
             return
 
         column = self._choose_column_object()
         column.cover()
         r = column.down
         while r != column:
-            s.append(r)
+            solution.append(r)
             j = r.right
             while j != r:
                 j.column.cover()
                 j = j.right
-            self._search(s)
-            r = s.pop()
+            self._search(solution)
+            r = solution.pop()
             column = r.column
             j = r.left
             while j != r:
