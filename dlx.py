@@ -4,6 +4,18 @@ import abc
 
 def solution_found_callback(s: List):
     print("SOLUTION FOUND OMG!")
+    rows = []
+    for k in s:
+        rows.append(k.identifier)
+    rows.sort()
+
+    grid = []
+    for row in rows:
+        grid.append(row % 9 + 1)
+
+    print(np.array(grid).reshape(9,9))
+    print('---------------------')
+
 
 
 class StorageObject:
@@ -44,6 +56,31 @@ class ColumnObject(StorageObject):
         # inside of DataObject class __init__ upon creation.
         self.s = 0
 
+    def cover(self) -> None:
+        self.r.l = self.l
+        self.l.r = self.r
+        i = self.d
+        while i != self:
+            j = i.r
+            while j != i:
+                j.d.u = j.u
+                j.u.d = j.d
+                j.c.s -= 1
+                j = j.r
+            i = i.d
+
+    def uncover(self) -> None:
+        i = self.u
+        while i != self:
+            j = i.l
+            while j != i:
+                j.c.s += 1
+                j.d.u = j
+                j.u.d = j
+                j = j.l
+            i = i.u
+        self.r.l = self
+        self.l.r = self
 
 class DataObject(StorageObject):
     """
@@ -54,6 +91,17 @@ class DataObject(StorageObject):
     def __init__(self, c: ColumnObject, identifier: Union[str, int]):
         super().__init__(c, identifier)
 
+    def link_rows(self):
+        c = self.c
+        c.s += 1
+        # make the last data object wrap to the column object.
+        self.d = c
+        # Now we can swap the previous last data object with this data object.
+        self.u = c.u
+        c.u.d = c.u = self
+
+    def unlink(self):
+        ...
 
 class Constraint:
     @property
@@ -168,13 +216,7 @@ class MatrixUtility:
 
         # Link each row to the column
         for d in (cell_constraint, row_constraint, col_constraint, box_constraint):
-            c = d.c
-            c.s += 1
-            # make the last data object wrap to the column object.
-            d.d = c
-            # Now we can swap the previous last data object with this data object.
-            d.u = c.u
-            c.u.d = c.u = d
+            d.link_rows()
 
     @staticmethod
     def _build_constraints(grid: np.array, columns: List[ColumnObject]):
@@ -215,52 +257,24 @@ class DLX:
             return
 
         c = self._choose_column_object()
-        self._cover(c)
+        c.cover()
         r = c.d
         while r != c:
             s.append(r)
             j = r.r
             while j != r:
-                self._cover(j.c)
+                j.c.cover()
                 j = j.r
             self._search(s)
             r = s.pop()
             c = r.c
             j = r.l
             while j != r:
-                self._uncover(j.c)
+                j.c.uncover()
                 j = j.l
             r = r.d
-        self._uncover(c)
+        c.uncover()
         return
-
-    @staticmethod
-    def _cover(c: ColumnObject):
-        c.r.l = c.l
-        c.l.r = c.r
-        i = c.d
-        while i != c:
-            j = i.r
-            while j != i:
-                j.d.u = j.u
-                j.u.d = j.d
-                j.c.s -= 1
-                j = j.r
-            i = i.d
-
-    @staticmethod
-    def _uncover(c: ColumnObject):
-        i = c.u
-        while i != c:
-            j = i.l
-            while j != i:
-                j.c.s += 1
-                j.d.u = j
-                j.u.d = j
-                j = j.l
-            i = i.u
-        c.r.l = c
-        c.l.r = c
 
     def _choose_column_object(self):
         """
@@ -280,21 +294,22 @@ class DLX:
 
 if __name__ == "__main__":
     # Load sudokus
-    sudoku = np.load("data/very_easy_puzzle.npy")
+    sudokus = np.load("data/very_easy_puzzle.npy")
     print("very_easy_puzzle.npy has been loaded into the variable sudoku")
-    print(f"sudoku.shape: {sudoku.shape}, sudoku[0].shape: {sudoku[0].shape}, sudoku.dtype: {sudoku.dtype}")
+    print(f"sudoku.shape: {sudokus.shape}, sudoku[0].shape: {sudokus[0].shape}, sudoku.dtype: {sudokus.dtype}")
 
     # Load solutions for demonstration
     solutions = np.load("data/very_easy_solution.npy")
     print()
 
-    # Print the first 9x9 sudoku...
-    print("First sudoku:")
-    print(sudoku[0], "\n")
+    for i, sudoku in enumerate(sudokus):
+        # Print the first 9x9 sudoku...
+        print("First sudoku:")
+        print(sudoku, "\n")
 
-    # ...and its solution
-    print("Solution of first sudoku:")
-    print(solutions[0])
+        # ...and its solution
+        print("Solution of first sudoku:")
+        print(solutions[i])
 
-    dlx = DLX(sudoku[0], solution_found_callback)
-    dlx.solve()
+        dlx = DLX(sudoku, solution_found_callback)
+        dlx.solve()
