@@ -1,20 +1,6 @@
-from typing import Callable, List, Union, Tuple
+from typing import List, Union, Tuple
 import numpy as np
 import abc
-
-def solution_found_callback(s: List):
-    print("SOLUTION FOUND OMG!")
-    rows = []
-    for k in s:
-        rows.append(k.identifier)
-    rows.sort()
-
-    grid = []
-    for row in rows:
-        grid.append(row % 9 + 1)
-
-    print(np.array(grid).reshape(9,9))
-    print('---------------------')
 
 
 class Constraint:
@@ -144,7 +130,7 @@ class DataObject(StorageObject):
     Donald Knuth refers to any cell in the binary matrix with a value of 1
     as "Data Objects".
     """
-    def __init__(self, column: ColumnObject, identifier: Union[str, int]):
+    def __init__(self, column: ColumnObject, identifier: Union[str, int]) -> None:
         super().__init__(column, identifier)
         # New data object in column. Increase the size.
         self.column.size += 1
@@ -235,21 +221,21 @@ class DLX:
     We will be breaking down the sudoku problem into 4 constraints
     and illustrate them in a cover problem using Donald Knuth's
     """
-    def __init__(self, grid: np.array, callback: Callable) -> None:
+    def __init__(self, grid: np.array) -> None:
         """
         :param h: The root column object
-        :param callback: A callback to call with the solution when found.
         """
-        self._callback = callback
         self.head = MatrixUtility.construct_from_np_array(grid)
+        self.solution = []
 
-    def solve(self) -> None:
+    def solve(self) -> List[DataObject]:
         # First time we call search, call it with an empty list.
         self._search([])
+        return self.solution
 
-    def _search(self, solution: List[DataObject]):
+    def _search(self, solution: List[DataObject]) -> None:
         if self.head.right == self.head:
-            self._callback(solution)
+            self.solution = solution.copy()
             return
 
         column = self._choose_column_object()
@@ -272,7 +258,7 @@ class DLX:
         column.uncover()
         return
 
-    def _choose_column_object(self):
+    def _choose_column_object(self) -> ColumnObject:
         """
         Donald Knuth argues that to minimise the branching factor, we should
         choose the column with the fewest number of 1's occurring in it.
@@ -288,24 +274,69 @@ class DLX:
         return column
 
 
+def sudoku_solver(sudoku: np.array) -> np.array:
+    """
+    Solves a Sudoku puzzle and returns its unique solution.
+
+    Input
+        sudoku : 9x9 numpy array
+            Empty cells are designated by 0.
+
+    Output
+        9x9 numpy array of integers
+            It contains the solution, if there is one. If there is no solution, all array entries should be -1.
+    """
+    dlx = DLX(sudoku)
+    dlx.solve()
+    raw_solution = dlx.solution
+    if raw_solution:
+        solution_rows = [row.identifier for row in raw_solution]
+        solution_rows.sort()
+        solution_grid = [row % 9 + 1 for row in solution_rows]
+        solved_sudoku = np.array(solution_grid).reshape(9, 9)
+        return solved_sudoku
+    # There is no solution.
+    return np.full((9, 9), -1)
+
+
 if __name__ == "__main__":
-    # Load sudokus
-    sudokus = np.load("data/very_easy_puzzle.npy")
-    print("very_easy_puzzle.npy has been loaded into the variable sudoku")
-    print(f"sudoku.shape: {sudokus.shape}, sudoku[0].shape: {sudokus[0].shape}, sudoku.dtype: {sudokus.dtype}")
+    import time
 
-    # Load solutions for demonstration
-    solutions = np.load("data/very_easy_solution.npy")
-    print()
+    difficulties = ['very_easy', 'easy', 'medium', 'hard']
 
-    for i, sudoku in enumerate(sudokus):
-        # Print the first 9x9 sudoku...
-        print("First sudoku:")
-        print(sudoku, "\n")
+    total_time = 0
 
-        # ...and its solution
-        print("Solution of first sudoku:")
-        print(solutions[i])
+    for difficulty in difficulties:
+        print(f"Testing {difficulty} sudokus")
 
-        dlx = DLX(sudoku, solution_found_callback)
-        dlx.solve()
+        sudokus = np.load(f"data/{difficulty}_puzzle.npy")
+        solutions = np.load(f"data/{difficulty}_solution.npy")
+
+        count = 0
+        for i in range(len(sudokus)):
+            sudoku = sudokus[i].copy()
+            print(f"This is {difficulty} sudoku number", i)
+            print(sudoku)
+
+            start_time = time.process_time()
+            your_solution = sudoku_solver(sudoku)
+            end_time = time.process_time()
+            total_time += (end_time - start_time)
+
+            print(f"This is your solution for {difficulty} sudoku number", i)
+            print(your_solution)
+
+            print("Is your solution correct?")
+            if np.array_equal(your_solution, solutions[i]):
+                print("Yes! Correct solution.")
+                count += 1
+            else:
+                print("No, the correct solution is:")
+                print(solutions[i])
+
+            print("This sudoku took", end_time - start_time, "seconds to solve.\n")
+
+        print(f"{count}/{len(sudokus)} {difficulty} sudokus correct")
+        if count < len(sudokus):
+            break
+        print(f"It took {total_time} to complete all 60 sudoku's.")
