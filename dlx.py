@@ -34,6 +34,7 @@ class DLX:
     def _search(self, solution: List[DataObject]) -> None:
         if self.head.right == self.head:
             # No more columns present. Solution found!
+            # Make a copy or else garbage collection deletes solution...
             self._solution = solution.copy()
             return
 
