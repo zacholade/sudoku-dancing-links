@@ -88,6 +88,13 @@ class ColumnObject(StorageObject):
         return self.__next__()
 
     def cover(self) -> None:
+        """
+        Removes the column from the linked list. It initially covers the
+        column object node at the top of the matrix, followed by removing
+        all rows which have a 1 present in this column. Rows can contain
+        more than one 1 as we are satisfying 4 constraints, so it must also
+        cover these columns.
+        """
         self.right.left = self.left
         self.left.right = self.right
         i = self.down
@@ -101,6 +108,9 @@ class ColumnObject(StorageObject):
             i = i.down
 
     def uncover(self) -> None:
+        """
+        Does the exact opposite of cover (see above).
+        """
         i = self.up
         while i != self:
             j = i.left
