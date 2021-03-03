@@ -52,29 +52,31 @@ class ColumnObject(StorageObject):
         # inside of DataObject class __init__ upon creation.
         self.size = 0
 
-    def iter(self, reverse: bool=False) -> ColumnObject:
+    def iter(self, direction: str='right') -> ColumnObject:
+        """
+        This more advanced iter function adds support for iterating in any direction.
+        'right', 'left', 'up', 'down' are all valid kwargs for direction.
+        Note: It is intended that is this called from the head node, because
+        the node that you start on is not yielded.
+        """
+        current = getattr(self, direction)
+        while current != self:
+            yield current
+            current = getattr(current, direction)
+
+    def __iter__(self) -> ColumnObject:
         """
         Python generators are notably faster than iterators.
         This is because generators implement the __next__ slot directly,
         rather than iterators which have to lookup the __next__ method from
         the __dict__ method. From my own tests, this is a speedup of
-        roughly 60-70%. So for my purposes I will be using this method
-        to loop over all nodes in the linked list rather than the __iter__
-        method that I also defined below.
+        roughly 60-70%. For this purpose, I will not actually be using
+        the next() or __next__ functions defined below, and will be calling
+        '.right' attribute directly to avoid this lookup.
+        Note: It is intended that is this called from the head node, because
+        the node that you start on is not yielded.
         """
-        if reverse:
-            current = self.left
-            while current != self:
-                yield current
-                current = current.left
-        else:
-            current = self.right
-            while current != self:
-                yield current
-                current = current.right
-
-    def __iter__(self) -> ColumnObject:
-        current = self.next()
+        current = self.right
         while current != self:
             yield current
             current = current.right

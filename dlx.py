@@ -53,9 +53,11 @@ class DLX:
         """
         min_col = None
         min_value = np.inf
-        for col in self.head.iter():
+        for col in self.head:
             size = col.size
             if size < min_value:
+                if size == 0:
+                    return col
                 min_value = size
                 min_col = col
         return min_col
