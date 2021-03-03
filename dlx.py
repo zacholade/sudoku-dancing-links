@@ -1,8 +1,10 @@
+from __future__ import annotations
 from typing import List
 import numpy as np
 
 from storage_object import ColumnObject, DataObject
-from utility import MatrixUtility
+from utility import CircularLinkedListIterator
+from matrix import Matrix
 
 
 class DLX:
@@ -12,10 +14,7 @@ class DLX:
     and illustrate them in a cover problem using Donald Knuth's
     """
     def __init__(self, grid: np.array) -> None:
-        """
-        :param h: The root column object
-        """
-        self.head = MatrixUtility.construct_from_np_array(grid)
+        self.head = Matrix.construct_from_np_array(grid)
         self.solution = []
 
     def solve(self) -> List[DataObject]:
@@ -53,15 +52,22 @@ class DLX:
         Donald Knuth argues that to minimise the branching factor, we should
         choose the column with the fewest number of 1's occurring in it.
         """
-        size = np.inf
-        current = self.head.right
-        column = None
-        while current != self.head:
-            if current.size < size:
-                size = current.size
-                column = current
-            current = current.right
-        return column
+        min_col = None
+        min_value = np.inf
+        for col in self.head:
+            if col.size == 1:
+                # The minimum size possible.
+                # Due to the nature of this problem, it's highly likely we will find this
+                # quickly, so it's worth having a check in our loop.
+                # If we don't then this isn't a problem due to the < comparison operator
+                # found below.
+                return col
+
+            if col.size < min_value:
+                min_value = col.size
+                min_col = col
+
+        return min_col
 
 
 def sudoku_solver(sudoku: np.array) -> np.array:
@@ -129,4 +135,4 @@ if __name__ == "__main__":
         print(f"{count}/{len(sudokus)} {difficulty} sudokus correct")
         if count < len(sudokus):
             break
-        print(f"It took {total_time} to complete all 60 sudoku's.")
+        print(f"It took {total_time}s to complete all 60 sudoku's.")

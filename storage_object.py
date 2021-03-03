@@ -1,6 +1,8 @@
-from typing import Union, List, Tuple
+from __future__ import annotations
+from typing import Union, List, Tuple, Iterable
 
 from constraint import CellConstraint, RowConstraint, ColumnConstraint, BoxConstraint
+from utility import CircularLinkedListIterator
 
 
 class StorageObject:
@@ -11,7 +13,7 @@ class StorageObject:
     __slots__ = ("column", "_identifier", "up", "down", "left", "right")
 
     def __init__(self,
-                 column: "ColumnObject",
+                 column: ColumnObject,
                  identifier: Union[str, int],
                  up=None,
                  down=None,
@@ -51,6 +53,9 @@ class ColumnObject(StorageObject):
         # inside of DataObject class __init__ upon creation.
         self.size = 0
 
+    def __iter__(self) -> CircularLinkedListIterator:
+        return CircularLinkedListIterator(self)
+
     def cover(self) -> None:
         self.right.left = self.left
         self.left.right = self.right
@@ -76,7 +81,6 @@ class ColumnObject(StorageObject):
             i = i.up
         self.right.left = self.left.right = self
 
-
 class DataObject(StorageObject):
     """
     Represents a given data object for use in the Dancing Links algorithm.
@@ -95,7 +99,7 @@ class DataObject(StorageObject):
                          y: int,
                          sub_row: int,
                          columns: List[ColumnObject]) -> \
-            Tuple["DataObject", "DataObject", "DataObject", "DataObject"]:
+            Tuple[DataObject, DataObject, DataObject, DataObject]:
         """
         A class method which creates four data objects for the given position
         in the 9x9 sudoku grid. Each data object satisfies a different constraint.
