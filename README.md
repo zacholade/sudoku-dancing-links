@@ -30,6 +30,8 @@ When representing the exact cover problem in a sparse matrix, the columns repres
 - **Columns:** therefore, each constraint will occupy 81 columns. There are 4 constraints so there will be a total of 81*4 = 324 columns.
 - **Rows:** therefore, each cell can have 9 possible solutions (should there be no clue given), so there can be up to 81*9 = 729 rows. Each cell with a clue given will only add one row to the matrix due to it having only one possible value (the clue given). 
 
+
+
 Once the DLX algorithm successfully halted, I was able to translate the solution from the binary matrix, M relatively easily. M contains 81 rows, one for each cell in the sudoku puzzle, whereby each row will contain an integer identifier as per the DLX algorithm and should be sorted by this in descending order. Due to the domain of a 9x9 sudoku puzzle being 9, I was able to take the modulus of 9 for each row once zero-based indices were corrected for.
 
 ## References
