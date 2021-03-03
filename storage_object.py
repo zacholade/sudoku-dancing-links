@@ -4,6 +4,13 @@ from typing import Union, List, Tuple
 from constraint import CellConstraint, RowConstraint, ColumnConstraint, BoxConstraint
 
 
+class Direction:
+    UP = 'up'
+    DOWN = 'down'
+    LEFT = 'left'
+    RIGHT = 'right'
+
+
 class StorageObject:
     """
     Represents an abstract base class for any storage object in the
@@ -14,10 +21,10 @@ class StorageObject:
     def __init__(self,
                  column: ColumnObject,
                  identifier: Union[str, int],
-                 up=None,
-                 down=None,
-                 left=None,
-                 right=None) -> None:
+                 up: StorageObject=None,
+                 down: StorageObject=None,
+                 left: StorageObject=None,
+                 right: StorageObject=None) -> None:
         self.identifier = identifier
         self.column = column
 
@@ -39,20 +46,7 @@ class StorageObject:
     def identifier(self, identifier: Union[str, int]):
         self._identifier = identifier
 
-
-class ColumnObject(StorageObject):
-    """
-    Represents a column in the binary matrix used in DLX.
-    """
-    __slots__ = ("size",)
-
-    def __init__(self, identifier: Union[str, int]):
-        super().__init__(self, identifier)
-        # The column size is initialised with 0. We increment this
-        # inside of DataObject class __init__ upon creation.
-        self.size = 0
-
-    def iter(self, direction: str='right') -> ColumnObject:
+    def iter(self, direction: str=Direction.RIGHT) -> StorageObject:
         """
         This more advanced iter function adds support for iterating in any direction.
         'right', 'left', 'up', 'down' are all valid kwargs for direction.
@@ -64,7 +58,7 @@ class ColumnObject(StorageObject):
             yield current
             current = getattr(current, direction)
 
-    def __iter__(self) -> ColumnObject:
+    def __iter__(self) -> StorageObject:
         """
         Python generators are notably faster than iterators.
         This is because generators implement the __next__ slot directly,
@@ -81,11 +75,24 @@ class ColumnObject(StorageObject):
             yield current
             current = current.right
 
-    def __next__(self) -> ColumnObject:
+    def __next__(self) -> StorageObject:
         return self.right
 
-    def next(self) -> ColumnObject:
+    def next(self) -> StorageObject:
         return self.__next__()
+
+
+class ColumnObject(StorageObject):
+    """
+    Represents a column in the binary matrix used in DLX.
+    """
+    __slots__ = ("size",)
+
+    def __init__(self, identifier: Union[str, int]):
+        super().__init__(self, identifier)
+        # The column size is initialised with 0. We increment this
+        # inside of DataObject class __init__ upon creation.
+        self.size = 0
 
     def cover(self) -> None:
         """
@@ -97,29 +104,21 @@ class ColumnObject(StorageObject):
         """
         self.right.left = self.left
         self.left.right = self.right
-        i = self.down
-        while i != self:
-            j = i.right
-            while j != i:
+        for i in self.iter(Direction.DOWN):
+            for j in i:
                 j.down.up = j.up
                 j.up.down = j.down
                 j.column.size -= 1
-                j = j.right
-            i = i.down
 
     def uncover(self) -> None:
         """
         Does the exact opposite of cover (see above).
         """
-        i = self.up
-        while i != self:
-            j = i.left
-            while j != i:
+        for i in self.iter(Direction.UP):
+            for j in i.iter(Direction.LEFT):
                 j.column.size += 1
                 j.down.up = j
                 j.up.down = j
-                j = j.left
-            i = i.up
         self.right.left = self.left.right = self
 
 

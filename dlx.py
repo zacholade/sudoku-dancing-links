@@ -2,7 +2,7 @@ from __future__ import annotations
 from typing import List
 import numpy as np
 
-from storage_object import ColumnObject, DataObject
+from storage_object import ColumnObject, DataObject, Direction, StorageObject
 from matrix import Matrix
 
 
@@ -14,7 +14,7 @@ class DLX:
     """
     def __init__(self, grid: np.array) -> None:
         self.head = Matrix.construct_from_np_array(grid)
-        self._solution = []
+        self._solution = []  # type: List[StorageObject]
 
     def get_solution(self) -> np.array:
         if self._solution:
@@ -26,12 +26,12 @@ class DLX:
         # There was no solution. Return array of -1's
         return np.full((9, 9), -1)
 
-    def solve(self) -> List[DataObject]:
+    def solve(self) -> List[StorageObject]:
         # First time we call search, call it with an empty list.
         self._search([])
         return self.get_solution()
 
-    def _search(self, solution: List[DataObject]) -> None:
+    def _search(self, solution: List[StorageObject]) -> None:
         if self.head.right == self.head:
             # No more columns present. Solution found!
             # Make a copy or else garbage collection deletes solution...
@@ -41,27 +41,25 @@ class DLX:
         # Choose the column with the least number of data objects.
         column = self._choose_column_object()
         column.cover()
-        r = column.down
-        while r != column:
+
+        for r in column.iter(Direction.DOWN):
             # Once covering the column, append all data objects in that
             # column to the solutions.
             solution.append(r)
-            j = r.right
-            while j != r:
+            for j in r:
                 j.column.cover()
-                j = j.right
+
             # Recurse until solution is found (no more columns) or
             # until we hit a dead end.
             self._search(solution)
             # We hit a dead end with that column, backtracking started.
             r = solution.pop()
+
             column = r.column
-            j = r.left
-            while j != r:
+            for j in r.iter(Direction.LEFT):
                 # backtracking involves uncovering all columns that we covered.
                 j.column.uncover()
-                j = j.left
-            r = r.down
+
         column.uncover()
         return
 
