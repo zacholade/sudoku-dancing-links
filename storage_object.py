@@ -81,6 +81,7 @@ class ColumnObject(StorageObject):
             i = i.up
         self.right.left = self.left.right = self
 
+
 class DataObject(StorageObject):
     """
     Represents a given data object for use in the Dancing Links algorithm.
