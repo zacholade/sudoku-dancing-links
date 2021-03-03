@@ -50,8 +50,8 @@ class StorageObject:
         """
         This more advanced iter function adds support for iterating in any direction.
         'right', 'left', 'up', 'down' are all valid kwargs for direction.
-        Note: It is intended that is this called from the head node, because
-        the node that you start on is not yielded.
+        Note: It is intended that is this called from the head node or a
+        column object, because the node that you start on is not yielded.
         """
         current = getattr(self, direction)
         while current != self:
