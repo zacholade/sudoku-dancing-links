@@ -14,32 +14,50 @@ class DLX:
     """
     def __init__(self, grid: np.array) -> None:
         self.head = Matrix.construct_from_np_array(grid)
-        self.solution = []
+        self._solution = []
+
+    def get_solution(self) -> np.array:
+        if self._solution:
+            solution_rows = [row.identifier for row in self._solution]
+            solution_rows.sort()
+            solution_grid = [row % 9 + 1 for row in solution_rows]
+            solved_sudoku = np.array(solution_grid).reshape(9, 9)
+            return solved_sudoku
+        # There was no solution. Return array of -1's
+        return np.full((9, 9), -1)
 
     def solve(self) -> List[DataObject]:
         # First time we call search, call it with an empty list.
         self._search([])
-        return self.solution
+        return self.get_solution()
 
     def _search(self, solution: List[DataObject]) -> None:
         if self.head.right == self.head:
-            self.solution = solution.copy()
+            # No more columns present. Solution found!
+            self._solution = solution.copy()
             return
 
+        # Choose the column with the least number of data objects.
         column = self._choose_column_object()
         column.cover()
         r = column.down
         while r != column:
+            # Once covering the column, append all data objects in that
+            # column to the solutions.
             solution.append(r)
             j = r.right
             while j != r:
                 j.column.cover()
                 j = j.right
+            # Recurse until solution is found (no more columns) or
+            # until we hit a dead end.
             self._search(solution)
+            # We hit a dead end with that column, backtracking started.
             r = solution.pop()
             column = r.column
             j = r.left
             while j != r:
+                # backtracking involves uncovering all columns that we covered.
                 j.column.uncover()
                 j = j.left
             r = r.down
@@ -77,15 +95,8 @@ def sudoku_solver(sudoku: np.array) -> np.array:
     """
     dlx = DLX(sudoku)
     dlx.solve()
-    raw_solution = dlx.solution
-    if raw_solution:
-        solution_rows = [row.identifier for row in raw_solution]
-        solution_rows.sort()
-        solution_grid = [row % 9 + 1 for row in solution_rows]
-        solved_sudoku = np.array(solution_grid).reshape(9, 9)
-        return solved_sudoku
-    # There is no solution.
-    return np.full((9, 9), -1)
+    solution = dlx.get_solution()
+    return solution
 
 
 if __name__ == "__main__":
