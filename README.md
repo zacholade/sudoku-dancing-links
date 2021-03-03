@@ -28,11 +28,13 @@ To reduce a 9x9 sudoku to the exact cover problem, it is important to understand
 
 When representing the exact cover problem in a sparse matrix, the columns represent constraints and rows represent possible solutions. There are 81 cells in a 9x9 sudoku puzzle:
 - **Columns:** therefore, each constraint will occupy 81 columns. There are 4 constraints so there will be a total of 81*4 = 324 columns.
-- **Rows:** therefore, each cell can have 9 possible solutions (should there be no clue given), so there can be up to 81*9 = 729 rows. Each cell with a clue given will only add one row to the matrix due to it having only one possible value (the clue given). 
+- **Rows:** each cell can have 9 possible solutions (should there be no clue given), so there can be up to 81*9 = 729 rows. Each cell with a clue given will only add one row to the matrix due to it having only one possible value (the clue given). 
 
+Once these fundamentals have been understood, the way DLX can be applied to this cover problem is straightforward. Each column in the matrix, M will track how many.
 
+Within the search function exists a call to a function called `choose_column_object`, which returns a column object present in the M. The column this returns is then next in line to be covered (removed from the linked list like the former example in the code block above). Donald Knuth proposes that there are two ways to go about implementing this function. It could either return the column containing the least amount of 1's, or simply return the first column following the head. Donald Knuth suggests that the former is worth the additional computation in order to minimise the branching factor, so this is the decision I made. To do this, I used a Python generator to loop over and compare the size of all columns by using an equality operator to compare each column's size to the current lowest value. Furthermore, I found with my own tests that if I returned a column with a size of 0 (the smallest number of 1's a column could contain) immediately after coming across one, the DLX algorithm was on average an additional 0.78s quicker when completing a sample of 60 sudokus of varying difficulty. d.f. = 100.
 
-Once the DLX algorithm successfully halted, I was able to translate the solution from the binary matrix, M relatively easily. M contains 81 rows, one for each cell in the sudoku puzzle, whereby each row will contain an integer identifier as per the DLX algorithm and should be sorted by this in descending order. Due to the domain of a 9x9 sudoku puzzle being 9, I was able to take the modulus of 9 for each row once zero-based indices were corrected for.
+Once the DLX algorithm successfully halted in a solution found state, I was able to translate the solution from the binary matrix, M relatively easily. We know that M contains 81 rows, one for each cell in the sudoku puzzle, whereby each row will contain an integer identifier as per the DLX algorithm. This was firstly sorted in descending order. Due to the domain of a 9x9 sudoku puzzle being 9, I was able to take the modulus of 9 for each row once zero-based indices were corrected for.
 
 ## References
 
