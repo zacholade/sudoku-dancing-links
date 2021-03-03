@@ -1,8 +1,7 @@
 from __future__ import annotations
-from typing import Union, List, Tuple, Iterable
+from typing import Union, List, Tuple
 
 from constraint import CellConstraint, RowConstraint, ColumnConstraint, BoxConstraint
-from utility import CircularLinkedListIterator
 
 
 class StorageObject:
@@ -53,8 +52,38 @@ class ColumnObject(StorageObject):
         # inside of DataObject class __init__ upon creation.
         self.size = 0
 
-    def __iter__(self) -> CircularLinkedListIterator:
-        return CircularLinkedListIterator(self)
+    def iter(self, reverse: bool=False) -> ColumnObject:
+        """
+        Python generators are notably faster than iterators.
+        This is because generators implement the __next__ slot directly,
+        rather than iterators which have to lookup the __next__ method from
+        the __dict__ method. From my own tests, this is a speedup of
+        roughly 60-70%. So for my purposes I will be using this method
+        to loop over all nodes in the linked list rather than the __iter__
+        method that I also defined below.
+        """
+        if reverse:
+            current = self.left
+            while current != self:
+                yield current
+                current = current.left
+        else:
+            current = self.right
+            while current != self:
+                yield current
+                current = current.right
+
+    def __iter__(self) -> ColumnObject:
+        current = self.next()
+        while current != self:
+            yield current
+            current = current.right
+
+    def __next__(self) -> ColumnObject:
+        return self.right
+
+    def next(self) -> ColumnObject:
+        return self.__next__()
 
     def cover(self) -> None:
         self.right.left = self.left

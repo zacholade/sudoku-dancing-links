@@ -3,7 +3,6 @@ from typing import List
 import numpy as np
 
 from storage_object import ColumnObject, DataObject
-from utility import CircularLinkedListIterator
 from matrix import Matrix
 
 
@@ -54,19 +53,11 @@ class DLX:
         """
         min_col = None
         min_value = np.inf
-        for col in self.head:
-            if col.size == 1:
-                # The minimum size possible.
-                # Due to the nature of this problem, it's highly likely we will find this
-                # quickly, so it's worth having a check in our loop.
-                # If we don't then this isn't a problem due to the < comparison operator
-                # found below.
-                return col
-
-            if col.size < min_value:
-                min_value = col.size
+        for col in self.head.iter():
+            size = col.size
+            if size < min_value:
+                min_value = size
                 min_col = col
-
         return min_col
 
 
