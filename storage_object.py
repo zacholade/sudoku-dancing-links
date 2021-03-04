@@ -95,7 +95,7 @@ class ColumnObject(StorageObject):
     """
     Represents a column in the binary matrix used in DLX.
     """
-    __slots__ = ("size",)
+    __slots__ = "size"
 
     def __init__(self, identifier: Union[str, int]):
         super().__init__(self, identifier)
