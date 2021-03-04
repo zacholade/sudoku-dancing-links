@@ -15,9 +15,9 @@ class DataObject(StorageObject):
     """
     def __init__(self, column: ColumnObject, identifier: Union[str, int]) -> None:
         super().__init__(column, identifier, down=column, up=column.up)
-        # New data object in column. Increase the size.
-        self.column.size += 1
-        self.column.up.down = self.column.up = self
+        # New data object in column. Essentially the same as uncovering which
+        # increments the column's size and links it to adjacent nodes.
+        self.uncover()
 
     @classmethod
     def with_constraints(cls,

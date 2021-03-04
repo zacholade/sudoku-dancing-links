@@ -36,10 +36,9 @@ class StorageObject:
         self.column = column
 
         # Link to the other cells containing a 1 in 4 orthogonal positions:
-        # up, down, left, and right.
-        # Any link that has no corresponding 1 instead will link to itself.
-        # We therefore initialise these values as just that and will link
-        # them later on.
+        # up, down, left, and right. Any link that has no corresponding 1
+        # instead will link to itself. We therefore initialise these values
+        # as just that and will link them later on.
         self.up = up if up else self
         self.down = down if down else self
         self.left = left if left else self
