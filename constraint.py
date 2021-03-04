@@ -1,9 +1,9 @@
-import abc
+from abc import abstractmethod
 
 
 class Constraint:
     @property
-    @abc.abstractmethod
+    @abstractmethod
     def _offset(self) -> int:
         """
         Offset to the constraint. Sudoku can be broken into
@@ -11,12 +11,12 @@ class Constraint:
         columns. 81x4 = 324 columns in total. Offset will therefore
         be a multiple of 81.
         """
-        pass
+        ...
 
     @staticmethod
-    @abc.abstractmethod
+    @abstractmethod
     def column_num(x: int, y: int, sub_row: int) -> int:
-        pass
+        ...
 
 
 class CellConstraint(Constraint):

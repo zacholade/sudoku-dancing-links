@@ -1,4 +1,5 @@
 from __future__ import annotations
+from abc import abstractmethod
 from typing import Union, List, Tuple
 
 from constraint import CellConstraint, RowConstraint, ColumnConstraint, BoxConstraint
@@ -81,6 +82,14 @@ class StorageObject:
     def next(self) -> StorageObject:
         return self.__next__()
 
+    @abstractmethod
+    def cover(self) -> None:
+        ...
+
+    @abstractmethod
+    def uncover(self) -> None:
+        ...
+
 
 class ColumnObject(StorageObject):
     """
@@ -106,9 +115,7 @@ class ColumnObject(StorageObject):
         self.left.right = self.right
         for i in self.iter(Direction.DOWN):
             for j in i:
-                j.down.up = j.up
-                j.up.down = j.down
-                j.column.size -= 1
+                j.cover()
 
     def uncover(self) -> None:
         """
@@ -116,9 +123,7 @@ class ColumnObject(StorageObject):
         """
         for i in self.iter(Direction.UP):
             for j in i.iter(Direction.LEFT):
-                j.column.size += 1
-                j.down.up = j
-                j.up.down = j
+                j.uncover()
         self.right.left = self.left.right = self
 
 
@@ -162,3 +167,12 @@ class DataObject(StorageObject):
         col.right = cel.left = box
         box.right = row.left = cel
         return cel, row, col, box
+
+    def cover(self) -> None:
+        self.down.up = self.up
+        self.up.down = self.down
+        self.column.size -= 1
+
+    def uncover(self) -> None:
+        self.column.size += 1
+        self.down.up = self.up.down = self
