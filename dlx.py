@@ -2,7 +2,7 @@ from __future__ import annotations
 from typing import List
 import numpy as np
 
-from storage_object import ColumnObject, DataObject, Direction, StorageObject
+from storage_object import ColumnObject, Direction, StorageObject
 from matrix import Matrix
 
 
