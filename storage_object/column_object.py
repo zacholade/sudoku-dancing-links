@@ -25,15 +25,15 @@ class ColumnObject(StorageObject):
         """
         self.right.left = self.left
         self.left.right = self.right
-        for i in self.iter(Direction.DOWN):
-            for j in i:
-                j.cover()
+        for row in self.iter(Direction.DOWN):
+            for data_object in row:
+                data_object.cover()
 
     def uncover(self) -> None:
         """
         Does the exact opposite of cover (see above).
         """
-        for i in self.iter(Direction.UP):
-            for j in i.iter(Direction.LEFT):
-                j.uncover()
+        for row in self.iter(Direction.UP):
+            for data_object in row.iter(Direction.LEFT):
+                data_object.uncover()
         self.right.left = self.left.right = self

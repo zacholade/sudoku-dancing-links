@@ -44,23 +44,23 @@ class DLX:
         column = self._choose_column_object()
         column.cover()
 
-        for r in column.iter(Direction.DOWN):
+        for row in column.iter(Direction.DOWN):
             # Once covering the column, append all data objects in that
             # column to the solutions.
-            solution.append(r)
-            for j in r:
-                j.column.cover()
+            solution.append(row)
+            for data_object in row:
+                data_object.column.cover()
 
             # Recurse until solution is found (no more columns) or
             # until we hit a dead end.
             self._search(solution)
             # We hit a dead end with that column, backtracking started.
-            r = solution.pop()
+            row = solution.pop()
 
-            column = r.column
-            for j in r.iter(Direction.LEFT):
-                # backtracking involves uncovering all columns that we covered.
-                j.column.uncover()
+            column = row.column
+            for data_object in row.iter(Direction.LEFT):
+                # backtracking involves uncovering the columns that we covered.
+                data_object.column.uncover()
 
         column.uncover()
         return
