@@ -93,8 +93,7 @@ def sudoku_solver(sudoku: np.array) -> np.array:
             It contains the solution, if there is one. If there is no solution, all array entries should be -1.
     """
     dlx = DLX(sudoku)
-    dlx.solve()
-    solution = dlx.get_solution()
+    solution = dlx.solve()
     return solution
 
 
