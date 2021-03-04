@@ -1,6 +1,12 @@
 from abc import abstractmethod
 
 
+__all__ = [
+    "Constraint", "CellConstraint", "RowConstraint",
+    "ColumnConstraint", "BoxConstraint"
+]
+
+
 class Constraint:
     @property
     @abstractmethod

@@ -3,7 +3,7 @@ import numpy as np
 from storage_object import ColumnObject, DataObject
 
 
-class Matrix:
+class BinaryMatrix:
     @classmethod
     def construct_from_np_array(cls, grid: np.array) -> ColumnObject:
         """

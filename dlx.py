@@ -1,9 +1,11 @@
 from __future__ import annotations
+
 from typing import List
+
 import numpy as np
 
+from binary_matrix import BinaryMatrix
 from storage_object import ColumnObject, Direction, StorageObject
-from matrix import Matrix
 
 
 class DLX:
@@ -13,7 +15,7 @@ class DLX:
     and illustrate them in a cover problem using Donald Knuth's
     """
     def __init__(self, grid: np.array) -> None:
-        self.head = Matrix.construct_from_np_array(grid)
+        self.head = BinaryMatrix.construct_from_np_array(grid)
         self._solution = []  # type: List[StorageObject]
 
     def get_solution(self) -> np.array:
@@ -93,23 +95,18 @@ def sudoku_solver(sudoku: np.array) -> np.array:
             It contains the solution, if there is one. If there is no solution, all array entries should be -1.
     """
     dlx = DLX(sudoku)
-    solution = dlx.solve()
-    return solution
+    return dlx.solve()
 
 
 if __name__ == "__main__":
     import time
-
     difficulties = ['very_easy', 'easy', 'medium', 'hard']
-
     total_time = 0
-
     for difficulty in difficulties:
         print(f"Testing {difficulty} sudokus")
 
         sudokus = np.load(f"data/{difficulty}_puzzle.npy")
         solutions = np.load(f"data/{difficulty}_solution.npy")
-
         count = 0
         for i in range(len(sudokus)):
             sudoku = sudokus[i].copy()
