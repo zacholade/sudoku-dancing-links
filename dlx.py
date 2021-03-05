@@ -78,7 +78,7 @@ class DLX:
         for col in self.head:
             size = col.size
             if size < min_value:
-                if size == 0:
+                if size <= 1:
                     return col
                 min_value = size
                 min_col = col
