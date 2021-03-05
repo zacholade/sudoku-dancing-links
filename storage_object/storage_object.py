@@ -23,7 +23,7 @@ class StorageObject:
     Represents an abstract base class for any storage object in the
     Dancing Links algorithm.
     """
-    __slots__ = ("column", "_identifier", "up", "down", "left", "right")
+    __slots__ = ("column", "identifier", "up", "down", "left", "right")
 
     def __init__(self,
                  column: ColumnObject,
@@ -43,14 +43,6 @@ class StorageObject:
         self.down = down if down else self
         self.left = left if left else self
         self.right = right if right else self
-
-    @property
-    def identifier(self) -> Union[str, int]:
-        return self._identifier
-
-    @identifier.setter
-    def identifier(self, identifier: Union[str, int]):
-        self._identifier = identifier
 
     def iter(self, direction: str=Direction.RIGHT) -> StorageObject:
         """
