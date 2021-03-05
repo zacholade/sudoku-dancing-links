@@ -19,8 +19,16 @@ class DLX:
         self._solution = []  # type: List[StorageObject]
 
     def get_solution(self) -> np.array:
+        """
+        We know that the solution list contains 81 data objects.
+        One for each cell in the sudoku puzzle, whereby each data object will contain
+        an integer identifier as per the DLX algorithm. The solution list is first sorted
+        by this integer identifier in descending order. Due to the domain of a 9x9 sudoku
+        puzzle being 9, I was then able to take the modulus of 9 for each row once
+        zero-based indices were corrected for (by adding one).
+        """
         return np.array([d % 9 + 1 for d in
-                        sorted([row.identifier for row in self._solution])]
+                        sorted([r.identifier for r in self._solution])]
                         ).reshape(9, 9) if self._solution else np.full((9, 9), -1)
 
     def solve(self) -> List[StorageObject]:
