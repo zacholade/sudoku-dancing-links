@@ -8,6 +8,11 @@ __all__ = [
 
 
 class Constraint:
+    """
+    Represents a constraint imposed on a set of columns in the
+    Binary Matrix. In sudoku we have 4 types of constraints which
+    have been defined below.
+    """
     @property
     @abstractmethod
     def _offset(self) -> int:
