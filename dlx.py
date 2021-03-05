@@ -74,7 +74,7 @@ class DLX:
         choose the column with the fewest number of 1's occurring in it.
         """
         min_col = None
-        min_value = np.inf
+        min_value = 325  # Max number of columns + 1.
         for col in self.head:
             size = col.size
             if size < min_value:
