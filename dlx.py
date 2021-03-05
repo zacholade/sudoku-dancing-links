@@ -19,14 +19,9 @@ class DLX:
         self._solution = []  # type: List[StorageObject]
 
     def get_solution(self) -> np.array:
-        if self._solution:
-            solution_rows = [row.identifier for row in self._solution]
-            solution_rows.sort()
-            solution_grid = [row % 9 + 1 for row in solution_rows]
-            solved_sudoku = np.array(solution_grid).reshape(9, 9)
-            return solved_sudoku
-        # There was no solution. Return array of -1's
-        return np.full((9, 9), -1)
+        return np.array([d % 9 + 1 for d in
+                        sorted([row.identifier for row in self._solution])]
+                        ).reshape(9, 9) if self._solution else np.full((9, 9), -1)
 
     def solve(self) -> List[StorageObject]:
         # First time we call search, call it with an empty list.
