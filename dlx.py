@@ -72,7 +72,6 @@ class DLX:
                 data_object.column.uncover()
 
         column.uncover()
-        return
 
     def _choose_column_object(self) -> ColumnObject:
         """
