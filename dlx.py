@@ -65,8 +65,8 @@ class DLX:
 
             # We hit a dead end with that column, backtracking started.
             row = solution.pop()
-
             column = row.column
+
             for data_object in row.iter(Direction.LEFT):
                 # backtracking involves uncovering the columns that we covered.
                 data_object.column.uncover()
