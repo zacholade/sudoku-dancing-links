@@ -19,11 +19,11 @@ class BinaryMatrix:
         for identifier in range(324):
             column = ColumnObject(identifier)
             # The last column should wrap back to the root (as per circular
-            # doubly linked list). So we can set R to h.
+            # doubly linked list). So we can set right to head.
             column.right = head
             # Likewise with the last column
             column.left = head.left
-            head.left.right = column  # h.L.R is the previously made column.
+            head.left.right = column  # head.left.right is the previously made column.
             # Lastly make it loop to the left also.
             head.left = column
             columns.append(column)
