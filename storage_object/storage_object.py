@@ -61,7 +61,7 @@ class StorageObject:
         Python generators are notably faster than iterators.
         This is because generators implement the __next__ slot directly,
         rather than iterators which have to lookup the __next__ method from
-        the __dict__ method. From my own tests, this is a speedup of
+        the class's __dict__. From my own tests, this is a speedup of
         roughly 60-70%. For this purpose, I will not actually be using
         the next() or __next__ functions defined below, and will be calling
         '.right' attribute directly to avoid this lookup.

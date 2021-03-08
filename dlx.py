@@ -140,7 +140,7 @@ if __name__ == "__main__":
 
             print("This sudoku took", end_time - start_time, "seconds to solve.\n")
 
-        print(f"{count}/{len(sudokus)} {difficulty} sudokus correct")
+        print(f"{count}/{len(sudokus)} {difficulty} sudokus correct\n")
         if count < len(sudokus):
             break
         print(f"It took {total_time}s to complete all 60 sudoku's.")
