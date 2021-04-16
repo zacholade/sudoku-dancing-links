@@ -16,7 +16,7 @@ class DLX:
     """
     def __init__(self, grid: np.array) -> None:
         self.head = BinaryMatrix.construct_from_np_array(grid)
-        self._solution = []  # type: List[StorageObject]
+        self._solution: List[StorageObject] = []
 
     def get_solution(self) -> np.array:
         """
