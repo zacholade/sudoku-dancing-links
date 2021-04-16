@@ -58,7 +58,7 @@ Due to the nature of DLX being an unsorted circular doubly linked list, and the 
 Once the DLX algorithm successfully halted in a solution found state, I was able to translate the obtained solution list back to a 9x9 array of values ranging from 1-9 relatively easily. We know that the solution list contains 81 *data objects*, one for each cell in the sudoku puzzle, whereby each *data object* will contain an integer identifier as per the DLX algorithm. The solution list is first sorted by this integer identifier in descending order. Due to the domain of a 9x9 sudoku puzzle being 9, I was then able to take the modulus of 9 for each row once zero-based indices were corrected for (by adding one). This was done for all 81 values such that the first value corresponded to cell 0 in the sudoku, followed by 1, 2, 3 ... 81-1 (Laestander, M, 2014).
 
 ## Implementation: Class Responsibilities
-**DLX:** Keeps reference to the head node of the binary matrix and implements a `solve(sudoku: np: array) -> np: array` function; the point of entry for the DLX algorithm. This function calls the recursive `search(solution: List[DataObject]) -> None` function which breaks out of recursion upon finding a solution or otherwise.
+**DLX:** Keeps reference to the head node of the binary matrix and implements a `solve(sudoku: np.array) -> np.array` function; the point of entry for the DLX algorithm. This function calls the recursive `search(solution: List[DataObject]) -> None` function which breaks out of recursion upon finding a solution or otherwise.
 
 **Binary Matrix:** Implements a classmethod called `construct_from_np_array`, which is called by the `DLX` class to initialise the binary matrix (circular doubly linked list) from the 9x9 sudoku array.
 
