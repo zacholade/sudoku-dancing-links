@@ -1,4 +1,14 @@
 # Dancing Links (DLX) - Solving Sudoku
+A Pythonic implementation of the DLX algorithm to 9x9 Sudoku puzzles.
+
+By wrapping the while loops outlined in Donald Knuth's DLX algorithm inside a Python `__iter__()` function, iteration in all directions over a circular doubly linked list can be achieved as follows:
+
+```py
+for node in storage_object.iter(direction: Direction):
+    ...
+```
+
+Considerably improves readability of the algorithm, particularly the [search function](https://github.com/zacholade/sudoku-dancing-links/blob/master/dlx.py#L39).
 
 ## Background
 When deciding which algorithm to pursue for my sudoku solver, efficiency in the algorithm was my upmost priority. After some search into various algorithms, I discovered various algorithms with varying time complexity. One approach involved a standard depth-first search algorithm, which has a time complexity of O(n^2), where n is both the size of the square grid and number of possible numbers a cell can hold. This approach would be highly achievable due to it being covered in the unit material and can be paired with constraint satisfaction. However, after further research, I discovered that it is possible for sudoku of a fixed nxn size to be solved in O(1) time. NP completeness is a concept which applies to any decision-based problem that has a variable input size (Johnson, D. 1985). Should the input size, n not be fixed, the time complexity would be O(n) (NP complete), because it could hold a value up to infinity. In this case, the algorithm would spend O(n) time simply reading the input as it can't expect what size the grid will be beforehand. 
