@@ -18,7 +18,12 @@ class DLX:
         self.head = BinaryMatrix.construct_from_np_array(grid)
         self._solution: List[StorageObject] = []
 
-    def get_solution(self) -> np.array:
+    def solve(self) -> np.ndarray[int]:
+        # First time we call search, call it with an empty list.
+        self._search([])
+        return self._format_solution()
+
+    def _format_solution(self) -> np.ndarray[int]:
         """
         We know that the solution list contains 81 data objects.
         One for each cell in the sudoku puzzle, whereby each data object will contain
@@ -30,11 +35,6 @@ class DLX:
         return np.array([d % 9 + 1 for d in
                         sorted([r.identifier for r in self._solution])]
                         ).reshape(9, 9) if self._solution else np.full((9, 9), -1)
-
-    def solve(self) -> List[StorageObject]:
-        # First time we call search, call it with an empty list.
-        self._search([])
-        return self.get_solution()
 
     def _search(self, solution: List[StorageObject]) -> None:
         if self.head.right == self.head:
@@ -90,22 +90,6 @@ class DLX:
         return min_col
 
 
-def sudoku_solver(sudoku: np.array) -> np.array:
-    """
-    Solves a Sudoku puzzle and returns its unique solution.
-
-    Input
-        sudoku : 9x9 numpy array
-            Empty cells are designated by 0.
-
-    Output
-        9x9 numpy array of integers
-            It contains the solution, if there is one. If there is no solution, all array entries should be -1.
-    """
-    dlx = DLX(sudoku)
-    return dlx.solve()
-
-
 if __name__ == "__main__":
     import time
     difficulties = ['very_easy', 'easy', 'medium', 'hard']
@@ -122,7 +106,7 @@ if __name__ == "__main__":
             print(sudoku)
 
             start_time = time.process_time()
-            your_solution = sudoku_solver(sudoku)
+            your_solution = DLX(sudoku).solve()
             end_time = time.process_time()
             total_time += (end_time - start_time)
 

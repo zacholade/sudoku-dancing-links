@@ -24,8 +24,7 @@ class DataObject(StorageObject):
                          x: int,
                          y: int,
                          sub_row: int,
-                         columns: List[ColumnObject]) -> \
-            Tuple[DataObject, DataObject, DataObject, DataObject]:
+                         columns: List[ColumnObject]) -> Tuple[DataObject, DataObject, DataObject, DataObject]:
         """
         A class method which creates four data objects for the given position
         in the 9x9 sudoku grid. Each data object satisfies a different constraint.
@@ -48,11 +47,11 @@ class DataObject(StorageObject):
         box.right = row.left = cel
         return cel, row, col, box
 
-    def cover(self) -> None:
+    def cover(self):
         self.down.up = self.up
         self.up.down = self.down
         self.column.size -= 1
 
-    def uncover(self) -> None:
+    def uncover(self):
         self.column.size += 1
         self.down.up = self.up.down = self

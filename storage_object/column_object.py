@@ -15,7 +15,7 @@ class ColumnObject(StorageObject):
         # inside of DataObject class __init__ upon creation.
         self.size = 0
 
-    def cover(self) -> None:
+    def cover(self):
         """
         Removes the column from the linked list. It initially covers the
         column object node at the top of the matrix, followed by removing
@@ -29,7 +29,7 @@ class ColumnObject(StorageObject):
             for data_object in row:
                 data_object.cover()
 
-    def uncover(self) -> None:
+    def uncover(self):
         """
         Does the exact opposite of cover (see above).
         """

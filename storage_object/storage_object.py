@@ -78,9 +78,9 @@ class StorageObject:
         return self.__next__()
 
     @abstractmethod
-    def cover(self) -> None:
+    def cover(self):
         ...
 
     @abstractmethod
-    def uncover(self) -> None:
+    def uncover(self):
         ...
