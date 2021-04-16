@@ -44,6 +44,4 @@ class BinaryMatrix:
                 for sub_row in range(9):
                     DataObject.with_constraints(x, y, sub_row, columns)
 
-        # Above lines can theoretically be re-written like this.
-        # [[[DataObject.with_constraints(x, y, sub_row, columns) for sub_row in range(9)] if grid[x][y] == 0 else DataObject.with_constraints(x, y, grid[x][y] - 1, columns)] for x, y in ((x, y) for x in range(9) for y in range(9))]
         return head

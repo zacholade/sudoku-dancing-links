@@ -51,10 +51,14 @@ class StorageObject:
         Note: It is intended that is this called from the head node or a
         column object, because the node that you start on is not yielded.
         """
-        current = getattr(self, direction)
-        while current != self:
+        # current = getattr(self, direction)
+        # while current != self:
+        #     yield current
+        #     current = getattr(current, direction)
+
+        current = self
+        while (current := getattr(current, direction)) is not self:
             yield current
-            current = getattr(current, direction)
 
     def __iter__(self) -> StorageObject:
         """
@@ -68,10 +72,9 @@ class StorageObject:
         Note: It is intended that is this called from the head node, because
         the node that you start on is not yielded.
         """
-        current = self.right
-        while current != self:
+        current = self
+        while (current := current.right) is not self:
             yield current
-            current = current.right
 
     def __next__(self) -> StorageObject:
         return self.right
