@@ -28,10 +28,10 @@ class StorageObject:
     def __init__(self,
                  column: ColumnObject,
                  identifier: Union[str, int],
-                 up: StorageObject=None,
-                 down: StorageObject=None,
-                 left: StorageObject=None,
-                 right: StorageObject=None) -> None:
+                 up: StorageObject = None,
+                 down: StorageObject = None,
+                 left: StorageObject = None,
+                 right: StorageObject = None) -> None:
         self.identifier = identifier
         self.column = column
 
@@ -44,18 +44,13 @@ class StorageObject:
         self.left = left if left else self
         self.right = right if right else self
 
-    def iter(self, direction: str=Direction.RIGHT) -> StorageObject:
+    def iter(self, direction: str = Direction.RIGHT) -> StorageObject:
         """
         This more advanced iter function adds support for iterating in any direction.
         'right', 'left', 'up', 'down' are all valid kwargs for direction.
         Note: It is intended that is this called from the head node or a
         column object, because the node that you start on is not yielded.
         """
-        # current = getattr(self, direction)
-        # while current != self:
-        #     yield current
-        #     current = getattr(current, direction)
-
         current = self
         while (current := getattr(current, direction)) is not self:
             yield current
