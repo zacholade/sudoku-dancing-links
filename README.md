@@ -8,7 +8,7 @@ for node in storage_object.iter(direction: Direction):
     ...
 ```
 
-This abstraction considerably improves legibility of the algorithm, particularly the [search function](https://github.com/zacholade/sudoku-dancing-links/blob/master/dlx.py#L39).
+This abstraction considerably improves legibility of the algorithm, particularly in the [search function](https://github.com/zacholade/sudoku-dancing-links/blob/master/dlx.py#L39).
 
 Can solve the 60 test puzzles of varying difficulty found in the [data directory](https://github.com/zacholade/sudoku-dancing-links/tree/master/data), in approximately 0.17 seconds.
 
