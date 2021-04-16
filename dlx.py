@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import List
+from typing import List, Tuple
 
 import numpy as np
 
@@ -14,7 +14,8 @@ class DLX:
     We will be breaking down the sudoku problem into 4 constraints
     and illustrate them in a cover problem using Donald Knuth's
     """
-    def __init__(self, grid: np.array):
+    def __init__(self, grid: np.array, size: Tuple[int, int] = (9, 9)):
+        self._size = size
         self.head = BinaryMatrix.construct_from_np_array(grid)
         self._solution: List[StorageObject] = []
 
@@ -92,7 +93,7 @@ class DLX:
 
 if __name__ == "__main__":
     import time
-    difficulties = ['very_easy', 'easy', 'medium', 'hard']
+    difficulties = ['very_easy', 'easy', 'medium', 'hard', 'impossible']
     total_time = 0
     for difficulty in difficulties:
         print(f"Testing {difficulty} sudokus")
