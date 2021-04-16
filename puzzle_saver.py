@@ -16,13 +16,14 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--puzzle")
     parser.add_argument("--filename")
+    parser.add_argument("--shape", default=9, type=int)
     parser.add_argument("--overwrite", default=False, type=bool)
     args = parser.parse_args()
 
     try:
-        puzzle = np.array([int(i) for i in args.puzzle], dtype=int).reshape(9, 9)
+        puzzle = np.array([int(i) for i in args.puzzle], dtype=int).reshape(args.shape, args.shape)
     except ValueError:
-        print("Could not parse puzzle. Should be 81 numbers long.")
+        print(f"Could not parse puzzle. Should be {args.shape**2} numbers long.")
         sys.exit(1)
 
     print(f"Loaded puzzle: \n{puzzle}")
