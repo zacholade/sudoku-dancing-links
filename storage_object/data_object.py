@@ -13,7 +13,7 @@ class DataObject(StorageObject):
     Donald Knuth refers to any cell in the binary matrix with a value of 1
     as "Data Objects".
     """
-    def __init__(self, column: ColumnObject, identifier: Union[str, int]) -> None:
+    def __init__(self, column: ColumnObject, identifier: Union[str, int]):
         super().__init__(column, identifier, down=column, up=column.up)
         # New data object in column. Essentially the same as uncovering which
         # increments the column's size and links it to adjacent nodes.

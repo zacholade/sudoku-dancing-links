@@ -14,7 +14,7 @@ class DLX:
     We will be breaking down the sudoku problem into 4 constraints
     and illustrate them in a cover problem using Donald Knuth's
     """
-    def __init__(self, grid: np.array) -> None:
+    def __init__(self, grid: np.array):
         self.head = BinaryMatrix.construct_from_np_array(grid)
         self._solution: List[StorageObject] = []
 
