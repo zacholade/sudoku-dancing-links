@@ -13,6 +13,10 @@ class BinaryMatrix:
     def head(self) -> ColumnObject:
         return self._head
 
+    @property
+    def is_solved(self) -> bool:
+        return self.head == self.head.right
+
     @classmethod
     def construct_from_np_array(cls, grid: np.array) -> BinaryMatrix:
         """

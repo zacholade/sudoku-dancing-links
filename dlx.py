@@ -38,7 +38,7 @@ class DLX:
                         ).reshape(9, 9) if self._solution else np.full((9, 9), -1)
 
     def _search(self, solution: List[StorageObject]) -> None:
-        if self.matrix.head.right == self.matrix.head:
+        if self.matrix.is_solved:
             # No more columns present. Solution found!
             self._solution = solution
             return
@@ -58,7 +58,7 @@ class DLX:
             # until we hit a dead end.
             self._search(solution)
 
-            if self.matrix.head.right == self.matrix.head:
+            if self.matrix.is_solved:
                 # This is an optimisation I found that speeds up the algorithm by ~22%
                 # If we add an additional check here for if the solution has been found
                 # we don't waste time backtracking as we exit out of the recursion!
