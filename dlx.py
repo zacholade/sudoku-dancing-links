@@ -10,38 +10,34 @@ from storage_object import Direction, StorageObject
 
 class DLX:
     """
-    Implements the Dancing Links algorithm.
-    We will be breaking down the sudoku problem into 4 constraints
-    and illustrate them in a cover problem using Donald Knuth's
+    Implements the Dancing Links (DLX) algorithm. By reducing the Sudoku
+    into an exact cover with 4 constraints, we can apply Donald Knuth's
+    DLX algorithm to solve it before transforming the solution back to Sudoku.
     """
-    def __init__(self, grid: np.array, size: Tuple[int, int] = (9, 9)):
+    def __init__(self, size: Tuple[int, int] = (9, 9)):
         self._size = size
+        self.matrix = None
+
+    def __call__(self, grid: np.array) -> np.ndarray[int]:
+        return self.solve(grid)
+
+    @property
+    def size(self) -> Tuple[int, int]:
+        return self._size
+
+    @size.setter
+    def size(self, size: Tuple[int, int]):
+        self._size = size
+
+    def solve(self, grid: np.array) -> np.ndarray[int]:
         self.matrix = BinaryMatrix.construct_from_np_array(grid)
-        self._solution: List[StorageObject] = []
-
-    def solve(self) -> np.ndarray[int]:
         # First time we call search, call it with an empty list.
-        self._search([])
-        return self._format_solution()
+        return DLX.format_solution(self._search([]))
 
-    def _format_solution(self) -> np.ndarray[int]:
-        """
-        We know that the solution list contains 81 data objects.
-        One for each cell in the sudoku puzzle, whereby each data object will contain
-        an integer identifier as per the DLX algorithm. The solution list is first sorted
-        by this integer identifier in descending order. Due to the domain of a 9x9 sudoku
-        puzzle being 9, I was then able to take the modulus of 9 for each row once
-        zero-based indices were corrected for (by adding one).
-        """
-        return np.array([d % 9 + 1 for d in
-                        sorted([r.identifier for r in self._solution])]
-                        ).reshape(9, 9) if self._solution else np.full((9, 9), -1)
-
-    def _search(self, solution: List[StorageObject]) -> None:
+    def _search(self, solution: list[StorageObject]) -> list[StorageObject]:
         if self.matrix.is_solved:
             # No more columns present. Solution found!
-            self._solution = solution
-            return
+            return solution
 
         # Choose the column with the least number of data objects.
         column = self.matrix.get_smallest_column()
@@ -62,7 +58,7 @@ class DLX:
                 # This is an optimisation I found that speeds up the algorithm by ~22%
                 # If we add an additional check here for if the solution has been found
                 # we don't waste time backtracking as we exit out of the recursion!
-                return
+                return solution
 
             # We hit a dead end with that column, backtracking started.
             row = solution.pop()
@@ -74,8 +70,23 @@ class DLX:
 
         column.uncover()
 
+    @staticmethod
+    def format_solution(solution: list[StorageObject]) -> np.ndarray[int]:
+        """
+        We know that the solution list contains 81 data objects.
+        One for each cell in the sudoku puzzle, whereby each data object will contain
+        an integer identifier as per the DLX algorithm. The solution list is first sorted
+        by this integer identifier in descending order. Due to the domain of a 9x9 sudoku
+        puzzle being 9, I was then able to take the modulus of 9 for each row once
+        zero-based indices were corrected for (by adding one).
+        """
+        return np.array([d % 9 + 1 for d in
+                        sorted([r.identifier for r in solution])]
+                        ).reshape(9, 9) if solution else np.full((9, 9), -1)
+
 
 if __name__ == "__main__":
+    dlx = DLX()
     import time
     difficulties = ['very_easy', 'easy', 'medium', 'hard', 'impossible']
     total_time = 0
@@ -91,7 +102,7 @@ if __name__ == "__main__":
             print(sudoku)
 
             start_time = time.process_time()
-            your_solution = DLX(sudoku).solve()
+            your_solution = dlx(sudoku)
             end_time = time.process_time()
             total_time += (end_time - start_time)
 

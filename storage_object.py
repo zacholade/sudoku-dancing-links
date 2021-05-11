@@ -138,7 +138,7 @@ class DataObject(StorageObject):
                          x: int,
                          y: int,
                          sub_row: int,
-                         columns: List[ColumnObject]) -> Tuple[DataObject, DataObject, DataObject, DataObject]:
+                         columns: list[ColumnObject]) -> Tuple[DataObject, DataObject, DataObject, DataObject]:
         """
         A class method which creates four data objects for the given position
         in the 9x9 sudoku grid. Each data object satisfies a different constraint.
