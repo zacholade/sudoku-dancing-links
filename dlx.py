@@ -5,7 +5,7 @@ from typing import List, Tuple
 import numpy as np
 
 from binary_matrix import BinaryMatrix
-from storage_object import ColumnObject, Direction, StorageObject
+from storage_object import Direction, StorageObject
 
 
 class DLX:
