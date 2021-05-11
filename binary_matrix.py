@@ -1,11 +1,20 @@
+from __future__ import annotations
+
 import numpy as np
 
 from storage_object import ColumnObject, DataObject
 
 
 class BinaryMatrix:
+    def __init__(self, head: ColumnObject):
+        self._head = head
+
+    @property
+    def head(self) -> ColumnObject:
+        return self._head
+
     @classmethod
-    def construct_from_np_array(cls, grid: np.array) -> ColumnObject:
+    def construct_from_np_array(cls, grid: np.array) -> BinaryMatrix:
         """
         Constructs the matrix and returns the root column.
         """
@@ -44,4 +53,20 @@ class BinaryMatrix:
                 for sub_row in range(9):
                     DataObject.with_constraints(x, y, sub_row, columns)
 
-        return head
+        return cls(head)
+
+    def get_smallest_column(self) -> ColumnObject:
+        """
+        Donald Knuth argues that to minimise the branching factor, we should
+        choose the column with the fewest number of 1's occurring in it.
+        """
+        min_col = None
+        min_value = 325  # Max number of columns + 1.
+        for col in self.head:
+            size = col.size
+            if size < min_value:
+                if size <= 1:
+                    return col
+                min_value = size
+                min_col = col
+        return min_col

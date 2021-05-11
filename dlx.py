@@ -16,7 +16,7 @@ class DLX:
     """
     def __init__(self, grid: np.array, size: Tuple[int, int] = (9, 9)):
         self._size = size
-        self.head = BinaryMatrix.construct_from_np_array(grid)
+        self.matrix = BinaryMatrix.construct_from_np_array(grid)
         self._solution: List[StorageObject] = []
 
     def solve(self) -> np.ndarray[int]:
@@ -38,13 +38,13 @@ class DLX:
                         ).reshape(9, 9) if self._solution else np.full((9, 9), -1)
 
     def _search(self, solution: List[StorageObject]) -> None:
-        if self.head.right == self.head:
+        if self.matrix.head.right == self.matrix.head:
             # No more columns present. Solution found!
             self._solution = solution
             return
 
         # Choose the column with the least number of data objects.
-        column = self._choose_column_object()
+        column = self.matrix.get_smallest_column()
         column.cover()
 
         for row in column.iter(Direction.DOWN):
@@ -58,7 +58,7 @@ class DLX:
             # until we hit a dead end.
             self._search(solution)
 
-            if self.head.right == self.head:
+            if self.matrix.head.right == self.matrix.head:
                 # This is an optimisation I found that speeds up the algorithm by ~22%
                 # If we add an additional check here for if the solution has been found
                 # we don't waste time backtracking as we exit out of the recursion!
@@ -73,22 +73,6 @@ class DLX:
                 data_object.column.uncover()
 
         column.uncover()
-
-    def _choose_column_object(self) -> ColumnObject:
-        """
-        Donald Knuth argues that to minimise the branching factor, we should
-        choose the column with the fewest number of 1's occurring in it.
-        """
-        min_col = None
-        min_value = 325  # Max number of columns + 1.
-        for col in self.head:
-            size = col.size
-            if size < min_value:
-                if size <= 1:
-                    return col
-                min_value = size
-                min_col = col
-        return min_col
 
 
 if __name__ == "__main__":
